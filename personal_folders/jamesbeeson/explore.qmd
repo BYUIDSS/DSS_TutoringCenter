@@ -1,0 +1,109 @@
+
+
+```{r}
+pacman::p_load(
+  tidyverse,
+  ggridges
+)
+
+clean <- read_csv("raw_data/Clean_lab_data.csv")
+```
+
+## Cleaning
+
+```{r}
+df <- clean
+
+# Rename columns for easy manipulation
+df <- df %>% rename(
+  course = Course,
+  professor = Professor,
+  class = "Student's class",
+  duration = "Visit duration (in minutes)",
+  datetime = "Date (of the appointment/visit)",
+  type = "Status (of the appointment/visit)",
+  appt_id = "Appointment Extended properties Id",
+  student_id = ID
+)
+```
+
+## Dropit
+
+This is for easy use - just get rid of everything weird
+
+```{r}
+# This is the dataframe that threw caution to the wind
+# Remove values that are clearly data errors (60 is logged when they don't log out)
+dropit <- df %>% filter(duration != 60, duration > 1)
+
+# The spikes are at 11 and 60 minutes naturally
+dropit %>% filter(duration < 70) %>% ggplot(aes(duration)) +
+  geom_density() +
+  geom_vline(xintercept = 60) +
+  geom_vline(xintercept = 11)
+
+dropit <- dropit %>% 
+  mutate(
+    wday = wday(datetime, label = TRUE, abbr = TRUE),
+    endtime = datetime + duration
+  ) 
+
+dropit %>% 
+  group_by(wday) %>% 
+  summarize(
+    num_people = n()
+  ) %>% 
+  ggplot(aes(wday, num_people)) +
+    geom_col()
+
+dropit %>% ggplot(aes(wday, duration, group = wday)) +
+  geom_boxplot()
+
+dropit %>% ggplot(aes(duration, wday, fill = wday)) +
+  geom_density_ridges() +
+  theme_bw()
+
+dropit %>% ggplot(aes(duration, group = wday)) +
+  geom_density()
+
+dropit %>% ggplot(aes(wday, hour(datetime))) +
+  geom_density()
+
+dropit %>% ggplot(aes(hour(datetime), wday, fill = wday)) +
+  geom_density_ridges() +
+  theme_bw()
+
+dropit %>% filter(date(datetime) == "2024-01-20") %>%
+  ggplot() +
+  geom_segment(aes(x = datetime, xend = endtime, y = reorder(student_id, datetime), yend = reorder(student_id, datetime)), 
+               size = 3) +
+  theme_bw()
+```
+
+## Just math
+
+```{r}
+math <- df %>% filter(str_starts(course, "MATH"))
+
+dropit_math <- math %>% filter(duration != 60, duration > 1)
+```
+
+```{r}
+dropit_math <- dropit_math %>% 
+  mutate(
+    wday = wday(datetime, label = TRUE, abbr = TRUE),
+    endtime = datetime + duration
+  ) 
+
+dropit_math %>% filter(date(datetime) == "2024-01-20") %>%
+  ggplot() +
+  geom_segment(aes(x = datetime, xend = endtime, y = reorder(student_id, datetime), yend = reorder(student_id, datetime)), 
+               size = 3) +
+  theme_bw()
+```
+
+
+
+
+
+
