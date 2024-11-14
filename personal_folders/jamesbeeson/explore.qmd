@@ -92,16 +92,24 @@ dropit_math <- math %>% filter(duration != 60, duration > 1)
 dropit_math <- dropit_math %>% 
   mutate(
     wday = wday(datetime, label = TRUE, abbr = TRUE),
-    endtime = datetime + duration
+    endtime = datetime + ms(duration)
   ) 
 
-dropit_math %>% filter(date(datetime) == "2024-01-20") %>%
+dropit_math %>% filter(date(datetime) == "2024-01-19") %>%
   ggplot() +
   geom_segment(aes(x = datetime, xend = endtime, y = reorder(student_id, datetime), yend = reorder(student_id, datetime)), 
                size = 3) +
   theme_bw()
+
+dropit_math %>% filter(date(datetime) == "2024-01-20") %>%
+  ggplot() +
+  geom_point(aes(x = datetime, y = reorder(student_id, datetime), size = duration)) +
+  theme_bw()
 ```
 
+
+Google maps popularity
+- Any given minute, how many are there?
 
 
 
