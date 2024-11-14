@@ -1,0 +1,15 @@
+```{r}
+
+pacman :: p_load(tidyverse, rio, ggplot2, plotly)
+
+df <- read_csv('../../raw_data/Clean_lab_data.csv')
+head(df)
+
+nulls <- df %>% filter(`Visit duration (in minutes)` == 60.00) %>% summarize(totalNumber = n()) 
+view(nulls)
+
+df1<- unique(nulls$`Appointment Extended properties Id`)
+view(df1)
+
+ggplot(nulls, aes(x = , y = totalNumber ))
+```
