@@ -92,7 +92,7 @@ dropit_math <- math %>% filter(duration != 60, duration > 1)
 dropit_math <- dropit_math %>% 
   mutate(
     wday = wday(datetime, label = TRUE, abbr = TRUE),
-    endtime = datetime + ms(duration)
+    endtime = datetime + duration * 60
   ) 
 
 dropit_math %>% filter(date(datetime) == "2024-01-19") %>%
