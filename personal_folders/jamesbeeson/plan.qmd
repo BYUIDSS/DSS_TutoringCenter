@@ -1,0 +1,178 @@
+# Plan
+
+1.  3 graphs - bar, histogram,
+2.  summaries - top 5, median high low for time period chosen
+3.  implement inside ui/server
+
+### Load
+
+```{r}
+pacman::p_load(
+  tidyverse,
+  ggridges
+)
+
+clean <- read_csv("raw_data/Clean_lab_data.csv")
+```
+
+
+### Clean
+
+```{r}
+# Prettifies and adds function
+renamed <- clean %>% rename(
+    course = Course,
+    professor = Professor,
+    class = "Student's class",
+    duration = "Visit duration (in minutes)",
+    datetime = "Date (of the appointment/visit)",
+    type = "Status (of the appointment/visit)",
+    appt_id = "Appointment Extended properties Id",
+    student_id = ID
+  ) %>% 
+  mutate(
+    id = seq_len(n()), # id added to fix waterfall chart
+    wday = wday(datetime, label = TRUE, abbr = TRUE),
+    endtime = datetime + duration * 60,
+    start_minute = minute(datetime) + hour(datetime) * 60, 
+    end_minute = minute(endtime) + hour(endtime) * 60
+  )
+
+# This just wipes out the dataset - drops all errors
+# And limits to just math courses
+df <- renamed %>% 
+  filter(duration != 60, duration > 1) %>% 
+  filter(str_starts(course, "MATH"))
+
+# Prepare to remove any weird days
+min_max_days <- df %>% 
+  mutate(
+    date = date(datetime)
+  ) %>% 
+  group_by(date) %>% 
+  summarize(
+    min = min(minute(datetime) + (hour(datetime)) * 60) / 60,
+    max = max(minute(datetime) + (hour(datetime)) * 60) / 60
+  )
+bad_days <- min_max_days$date[min_max_days$min < 6]
+
+# Remove weird days
+df <- df %>% filter(!(date(datetime) %in% bad_days))
+
+# df$id %>% duplicated() %>% sum()
+# df %>% names()
+```
+
+### Visuals
+
+Waterfall
+
+```{r}
+date_chosen <- "2024-01-19"
+
+df %>% filter(date(datetime) == date_chosen) %>%
+  ggplot() +
+  geom_segment(aes(x = datetime, xend = endtime, 
+                   y = reorder(id, datetime), 
+                   yend = reorder(id, datetime)), 
+               size = 1.5) +
+  labs(
+    title = "Students on a day",
+    x = "Time of Day",
+    y = "Individual Student Visits"
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+```
+
+Heatmap
+
+```{r}
+# heatmap by minute
+#datetime_minute <- 
+df %>% group_by(floor_date(datetime, unit = "minute")) %>% 
+  summarize(
+    students = n()  
+  ) %>% 
+  rename(date = `floor_date(datetime, unit = "minute")`) %>% 
+  mutate(
+    weekday = wday(date, label = TRUE, abbr = FALSE), 
+    minute = minute(date) + (hour(date)) * 60
+  ) %>% 
+  ggplot(aes(minute, weekday, fill = students)) +
+  geom_tile()
+
+# heatmap by hour
+df %>% group_by(floor_date(datetime, unit = "hour")) %>% 
+  summarize(
+    students = n()  
+  ) %>% 
+  rename(date = `floor_date(datetime, unit = "hour")`) %>% 
+  mutate(
+    weekday = wday(date, label = TRUE, abbr = FALSE), 
+    minute = (hour(date))
+  ) %>% 
+  ggplot(aes(minute, weekday, fill = students)) +
+  geom_tile() +
+  scale_fill_gradient2(high = "darkblue") +
+  theme_bw()
+
+# violin plot
+df %>% mutate(
+    weekday = wday(date, label = TRUE, abbr = FALSE), 
+    minute = (hour(date))
+  )
+  
+df %>% ggplot(aes(minute, group = weekday)) +
+  geom_violin() +
+  scale_fill_gradient2(high = "darkblue") +
+  theme_bw()
+```
+
+Google Frequency
+
+I got one way to overlap, but how do I change the range dynamically? Or the bin ranges?
+
+- By day of week
+- By time of day
+
+Could use a histogram instead, try to get longer data
+
+```{r}
+# get a range
+time_range <- seq(
+  from = min(df$start_minute),
+  to = max(df$end_minute),
+  by = 1
+)
+
+#seq(1, 60*24)
+
+# chart
+data.frame(
+  time = time_range,
+  students = sapply(time_range, function(x) sum(df$start_minute < x & x < df$end_minute))
+) %>% ggplot(aes(time / 60, students)) +
+  geom_col() +
+  labs(
+    title = "wow",
+    y = "Attendant Students"
+  )
+
+data.frame(
+  time = time_range,
+  students = sapply(time_range, function(x) sum(df$start_minute < x & x < df$end_minute))
+)
+```
+
+```{r}
+df %>% ggplot(aes(time_range, num_people)) +
+  geom_bar()
+```
+
+how to update real time with input
+filter by date range inside each cell
+filter by class outside cells
