@@ -1,5 +1,6 @@
 ## About
 *
+$%
 The math tutoring center wants some help! They would like a tool to analyze students' attendance so they can more accurately forecast how many tutors they need. The goal is to get them a dashboard that they can upload a csv and play with some premade graphs they can filter.
 
 ## Next Steps:
