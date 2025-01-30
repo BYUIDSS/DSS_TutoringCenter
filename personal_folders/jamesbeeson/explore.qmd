@@ -107,9 +107,77 @@ dropit_math %>% filter(date(datetime) == "2024-01-20") %>%
   theme_bw()
 ```
 
+```{r}
+dt <- ymd_hms("2024-05-14 11:25:49 MDT")
+max(minute(df$datetime) + (hour(df$datetime) + 6) * 60) / 60
+max(hour(df$datetime))
+
+# clock time issues
+clock_times <- df %>% mutate(
+  date = datetime,
+  min = min(minute(datetime) + (hour(datetime) + 6) * 60) / 60,
+  max = max(minute(datetime) + (hour(datetime) + 6) * 60) / 60
+)
+
+clock_times <- df %>% 
+  mutate(
+    date = date(datetime)
+  ) %>% 
+  group_by(date) %>% 
+  summarize(
+    min = min(minute(datetime) + (hour(datetime)) * 60) / 60,
+    max = max(minute(datetime) + (hour(datetime)) * 60) / 60
+  )
+clock_times %>% glimpse()
+clock_times %>% ggplot(aes(date)) +
+  geom_point(aes(y = min)) +
+  geom_point(aes(y = max))
+
+min(clock_times$min)
+sum(clock_times$min < 8)
+
+sum(hour(df$datetime) < 8)
+
+df %>% filter(hour(datetime) < 4)
+(7 * 60 + 58) / 60
+(minute(hms("07:58:35")) + (hour(hms("07:58:35"))) * 60) / 60
+
+bad_day <- df %>% filter(date(datetime) == ymd("2024-05-15"))
+max(date(df$datetime))
+hour(bad_day$datetime) %>% hist()
+max(hour(bad_day$datetime))
+min(hour(bad_day$datetime))
+ggplot(bad_day, aes(hour(datetime), minute(datetime))) +
+  geom_point()
+```
+
+```{r}
+
+hm <- expand.grid(x = 1:10, y = 1:10)
+hm$z <- rnorm(100)
+ggplot(hm, aes(x, y, fill = z)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red") +
+  labs(title = "ggplot2 Heatmap") +
+  theme_minimal()
+
+```
+
+```{r}
+min(floor_date(df$datetime, unit = "minute"))
+```
+
+
+
+```{r}
+
+```
+
+
 
 Google maps popularity
 - Any given minute, how many are there?
+
 
 
 
