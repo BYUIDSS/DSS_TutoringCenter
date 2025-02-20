@@ -64,6 +64,18 @@ function(input, output, session) {
                 end_minute = minute(endtime) + hour(endtime) * 60
             )
         #print(MathCourses)
+        # Impute average duration for invalid durations (<= 60 or < 0)
+        df <- df %>%
+            group_by(course) %>%
+            mutate(
+                valid_duration = ifelse(duration == 60 | duration < 1, NA, duration),
+                avg_duration = mean(valid_duration, na.rm = TRUE)
+            ) %>%
+            ungroup() %>%
+            mutate(
+                duration = ifelse(is.na(valid_duration), avg_duration, duration)
+            ) %>%
+            select(-valid_duration, -avg_duration)
         df
     })
     
