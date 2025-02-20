@@ -9,6 +9,7 @@
 
 library(shiny)
 library(bslib)
+library(shinyWidgets)
 
 cards <- list(
     card(
@@ -28,9 +29,9 @@ fluidPage(
     bslib::page_sidebar(
     title = "Tutoring Attendance Dashboard",
     sidebar = list(
+        virtualSelectInput("courses", "Course(s)",  choices = NULL, multiple = TRUE),#, showValueAsTags = TRUE),
         fileInput("file1", "Choose CSV File", accept = ".csv"),
         selectInput("dayOfWeek", "Day of Week", choices = c("(select)", "Monday", "Tuesday", "Wednesday","Thursday","Friday", "Saturday", "Sunday")),
-        selectizeInput("courses", "Course(s)",  choices = NULL, multiple = TRUE),
         dateRangeInput("dateRange", "Date Range", start = "2020-01-01")
     ),
     layout_columns(
