@@ -12,6 +12,7 @@ library(tidyverse)
 library(ggridges)
 library(DT)
 library(shinyWidgets)
+library(ggforce)
 
 options(shiny.maxRequestSize = 30*1024^2)
 
@@ -59,9 +60,23 @@ function(input, output, session) {
             mutate(
                 id = seq_len(n()), # id added to fix waterfall chart
                 wday = wday(datetime, label = TRUE, abbr = TRUE),
+                Week = week(datetime),
+                Year = year(datetime),
+                Semester = case_when(
+                    Week <= 15 ~ 'Winter',
+                    Week > 15 & Week <= 30 ~ 'Spring',
+                    Week > 30 & Week <= 36 ~ 'Summer',
+                    Week > 36 & Week <= 54 ~ 'Fall'
+                ),
+                Week_of_Sem = case_when(
+                    Semester == "Winter" ~ Week, 
+                    Semester == "Spring" ~ Week-15,
+                    Semester == "Summer" ~ Week-30,
+                    Semester == "Fall" ~ Week-36
+                ),
                 endtime = datetime + duration * 60,
                 start_minute = minute(datetime) + hour(datetime) * 60, 
-                end_minute = minute(endtime) + hour(endtime) * 60
+                end_minute = minute(endtime) + hour(endtime) * 60,
             )
         #print(MathCourses)
         # Impute average duration for invalid durations (<= 60 or < 0)
@@ -139,6 +154,17 @@ function(input, output, session) {
     
     
 ## Plots ####
+    
+    output$boxplot <- renderPlot({
+        dat <- data()
+        dat <- dat %>% 
+            filter(course %in% input$courses & duration <=300)
+        
+        ggplot(dat, aes(x = course, y =duration)) + 
+            geom_boxplot() +
+            facet_zoom(ylim = c(0, 130), zoom.data=zoom, zoom.size = 1.5) # creates the zoom
+        
+    })
     
     output$waterfall <- renderPlot({
         date_chosen <- input$waterfall_day
