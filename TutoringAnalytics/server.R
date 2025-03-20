@@ -18,14 +18,14 @@ options(shiny.maxRequestSize = 30*1024^2)
 
 MathCourses <- list(
     Foundational = list("MATH 100A","MATH 100B","MATH 101","MATH 108X","MATH 108Y"),
-    Precalculus = list("MATH 109","MATH 110X","MATH 111"    ),
-    Calculus = list("MATH 112X","MATH 113","MATH 214","MATH 214E","MATH 215","MATH 472"    ),
-    AppliedMath  = list("MATH 119","MATH 282","MATH 283","MATH 284"    ),
-    Statistics = list("MATH 124","MATH 221A","MATH 221B","MATH 221C","MATH 221D","MATH 325","MATH 326","MATH 330","MATH 423","MATH 424","MATH 425","MATH 428","MATH 494R","MATH 488"    ),
-    LinearAlgebra = list("MATH 241","MATH 316","MATH 341","MATH 443"    ),
-    TeacherEducation = list("MATH 205","MATH 206","MATH 275","MATH 390","MATH 490","MATH 491"    ),
-    AdvancedMath  = list("MATH 301","MATH 340","MATH 350","MATH 411","MATH 412","MATH 440","MATH 441","MATH 442","MATH 461","MATH 462","MATH 463"    ),
-    OtherMath  = list("MATH 190","MATH 191","MATH 280","MATH 391","MATH 450","MATH 295R","MATH 495R","MATH 498R","MATH 499R"    )
+    Precalculus = list("MATH 109","MATH 110X","MATH 111"),
+    Calculus = list("MATH 112X","MATH 113","MATH 214","MATH 214E","MATH 215","MATH 472"),
+    AppliedMath  = list("MATH 119","MATH 282","MATH 283","MATH 284"),
+    Statistics = list("MATH 124","MATH 221A","MATH 221B","MATH 221C","MATH 221D","MATH 325","MATH 326","MATH 330","MATH 423","MATH 424","MATH 425","MATH 428","MATH 494R","MATH 488"),
+    LinearAlgebra = list("MATH 241","MATH 316","MATH 341","MATH 443"),
+    TeacherEducation = list("MATH 205","MATH 206","MATH 275","MATH 390","MATH 490","MATH 491"),
+    AdvancedMath  = list("MATH 301","MATH 340","MATH 350","MATH 411","MATH 412","MATH 440","MATH 441","MATH 442","MATH 461","MATH 462","MATH 463"),
+    OtherMath  = list("MATH 190","MATH 191","MATH 280","MATH 391","MATH 450","MATH 295R","MATH 495R","MATH 498R","MATH 499R")
 )
 
 NotableCourses <- list(
