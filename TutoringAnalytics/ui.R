@@ -30,25 +30,27 @@ navbarPage( # UI ####
                 fileInput("file1", "Choose CSV File", accept = ".csv"),
                 virtualSelectInput("courses", "Course(s)",  choices = NULL, multiple = TRUE, zIndex = 900 ),#, showValueAsTags = TRUE),
                 selectInput("dayOfWeek", "Day of Week", choices = c("(select)", "Monday", "Tuesday", "Wednesday","Thursday","Friday", "Saturday", "Sunday")),
-                dateRangeInput("dateRange", "Date Range", start = "2020-01-01")
+                dateRangeInput("dateRange", "Date Range", start = "2020-01-01"),
+                selectInput("semester", "Semester(s)", choices = c("Winter", "Spring", "Summer","Fall"), multiple = TRUE),
+                selectInput("weekofsemester", "Week(s) of Semester", choices = c(1:15), multiple = TRUE)
             ),
             layout_columns(
                 fill = FALSE,
-                value_box(
-                    title = "Median appt duration",
-                    value = textOutput("avg_dur"),
-                    showcase = bsicons::bs_icon("align-center")
-                ),
-                value_box(
-                    title = "Standard Deviation",
-                    value = textOutput("sd"),
-                    showcase = bsicons::bs_icon("signpost-split-fill")
-                ),
-                value_box(
-                    title = "Max appt Length",
-                    value = textOutput("max"),
-                    showcase = bsicons::bs_icon("align-top")
-                )
+            #     value_box(
+            #         title = "Median appt duration",
+            #         value = textOutput("avg_dur"),
+            #         showcase = bsicons::bs_icon("align-center")
+            #     ),
+            #     value_box(
+            #         title = "Standard Deviation",
+            #         value = textOutput("sd"),
+            #         showcase = bsicons::bs_icon("signpost-split-fill")
+            #     ),
+            #     value_box(
+            #         title = "Max appt Length",
+            #         value = textOutput("max"),
+            #         showcase = bsicons::bs_icon("align-top")
+            #     )
             ),
             card(
                 full_screen = TRUE,
@@ -64,6 +66,11 @@ navbarPage( # UI ####
                 full_screen = TRUE,
                 card_header("Attendance Duration Distribution By Course", boxControls,class = "d-flex justify-content-between"),
                 plotlyOutput("heatmap"),
+            ),
+            card(
+                full_screen = TRUE,
+                card_header("WIP"),#, compControls,class = "d-flex justify-content-between"),
+                plotOutput("comp1"),
             )
         )
     ),

@@ -188,6 +188,14 @@ function(input, output, session) {
             df <- df %>% filter(course %in% input$courses)
         }
         
+        if (!is.null(input$semester)) {
+            df <- df %>% filter(Semester %in% input$semester)
+        }
+        
+        if (!is.null(input$weekofsemester)) {
+            df <- df %>% filter(Week_of_Sem %in% input$weekofsemester)
+        }
+        
         if (input$dayOfWeek != "(select)") {
             df <- df %>% filter(wday == input$dayOfWeek)
         }
@@ -329,6 +337,13 @@ function(input, output, session) {
         }
         fig %>% layout(showlegend = FALSE)
         
+    })
+    
+    output$comp1 <- renderPlot({
+        df <- filtered_data()
+        ggplot(df %>% filter(course == "MATH 100B"))+
+            geom_bar(aes(x=Week,fill=factor(Week_of_Sem)))+
+            facet_wrap(~Year)
     })
     
 # Layout ####
