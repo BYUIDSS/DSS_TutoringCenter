@@ -3682,12 +3682,6 @@
     }
   },
   "files": {
-    "LabLayout.R": {
-      "checksum": "8f7f65711f1aba851a3e3642457e66f0"
-    },
-    "layout_data.rds": {
-      "checksum": "1e516331cae06d90bf5f62b2b2d100ef"
-    },
     "server.R": {
       "checksum": "1a99c4113db844844904e66e8b1a8f29"
     },

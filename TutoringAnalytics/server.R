@@ -38,7 +38,7 @@ NotableCourses <- list(
 
 
 # Define the file to store the layout data
-layout_file <- "layout_data.rds"
+layout_file <- readRDS(gzcon(url("https://github.com/BYUIDSS/DSS_TutoringCenter/raw/refs/heads/master/TutoringAnalytics/layout_data.rds")))
 
 # Define plot limits
 xlim_max <- 30
