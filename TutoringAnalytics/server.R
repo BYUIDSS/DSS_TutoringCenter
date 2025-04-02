@@ -299,7 +299,7 @@ function(input, output, session) {
         
         min_value <- 0
         max_value <- max(joined_data$avg_val)
-        
+        hours <- 8:20
         # Function to create a color ramp between two colors
         color_ramp <- colorRampPalette(c("forestgreen", "red"))
         custom_colors <- color_ramp(100) # Create 100 colors in the ramp
