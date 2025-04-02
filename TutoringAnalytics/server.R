@@ -333,13 +333,7 @@ function(input, output, session) {
     
 # Layout ####
     # Load layout data from file (if it exists)
-    initial_layout_data <- list(
-        `Layout 1` = data.frame(xmin = 1, xmax = 3, ymin = 2, ymax = 4, lab_area = "A", stringsAsFactors = FALSE),
-        `Layout 2` = data.frame(xmin = 5, xmax = 7, ymin = 6, ymax = 5, lab_area = "B", stringsAsFactors = FALSE) #y limit changed
-    )
-    if (file.exists(layout_file)) {
-        initial_layout_data <- readRDS(layout_file)
-    }
+    initial_layout_data <- layout_file
     
     # Reactive value to store rectangles data
     rectangles <- reactiveVal(data.frame(xmin = numeric(), xmax = numeric(),
@@ -546,7 +540,7 @@ function(input, output, session) {
         } else {
             data.frame(xmin = numeric(), xmax = numeric(),
                        ymin = numeric(), ymax = numeric(),
-                       label = character(), stringsAsFactors = FALSE)
+                       lab_area = character(), stringsAsFactors = FALSE)
         }
         
         ggplot() +
@@ -556,7 +550,7 @@ function(input, output, session) {
                       color = "black",
                       linewidth = 2) +  # Black outline
             geom_text(data = rectangles(),
-                      aes(x = (xmin + xmax) / 2, y = (ymin + ymax) / 2, label = label),
+                      aes(x = (xmin + xmax) / 2, y = (ymin + ymax) / 2, label = lab_area),
                       size = 5) +
             xlim(0, xlim_max) +
             ylim(0, ylim_max) +
