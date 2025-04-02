@@ -1,6 +1,9 @@
 library(shiny)
 library(ggplot2)
 library(dplyr)
+library(shinyWidgets)
+library(shinyjs)
+
 
 # Define the file to store the layout data
 layout_file <- "layout_data.rds"
@@ -11,12 +14,13 @@ ylim_max <- 25  # Adjusted for 4:3 aspect ratio
 
 
 ui <- fluidPage(
+  useShinyjs(),
   titlePanel("Interactive Rectangle Plot"),
   
   sidebarLayout(
     sidebarPanel(
       selectInput("label_choice", "Label for New Rectangle:",
-                  choices = c("A", "B", "C", "Custom"), selected = "A"),
+                  choices = c("100/101", "108", "Pre-Calc", "Calc 1", "Calc 2/3", "221", "Custom"), selected = "A"),
       conditionalPanel(
         condition = "input.label_choice == 'Custom'",
         textInput("custom_label", "Enter Custom Label:")
@@ -26,12 +30,13 @@ ui <- fluidPage(
       actionButton("save_layout", "Save Layout"),
       downloadButton("download_layout", "Download Layout"),
       textOutput("save_message"),
-      checkboxInput("delete_mode", "Delete Mode", value = FALSE) # Toggle switch
+      checkboxInput("delete_mode", "Delete Mode", value = FALSE),
+      numericInput("numericInput", "Observations:", 10, min = 1, max = 100)# Toggle switch
     ),
     
     mainPanel(
-      uiOutput("plot_ui", width = "100%")  # Take full width of the main panel
-    )
+      uiOutput("plot_ui", width = "100%"),  # Take full width of the main panel
+      )
   )
 )
 
@@ -40,8 +45,8 @@ server <- function(input, output, session) {
   
   # Load layout data from file (if it exists)
   initial_layout_data <- list(
-    `Layout 1` = data.frame(xmin = 1, xmax = 3, ymin = 2, ymax = 4, label = "A", stringsAsFactors = FALSE),
-    `Layout 2` = data.frame(xmin = 5, xmax = 7, ymin = 6, ymax = 5, label = "B", stringsAsFactors = FALSE) #y limit changed
+    `Layout 1` = data.frame(xmin = 1, xmax = 3, ymin = 2, ymax = 4, lab_area = "A", stringsAsFactors = FALSE),
+    `Layout 2` = data.frame(xmin = 5, xmax = 7, ymin = 6, ymax = 5, lab_area = "B", stringsAsFactors = FALSE) #y limit changed
   )
   if (file.exists(layout_file)) {
     initial_layout_data <- readRDS(layout_file)
@@ -50,7 +55,7 @@ server <- function(input, output, session) {
   # Reactive value to store rectangles data
   rectangles <- reactiveVal(data.frame(xmin = numeric(), xmax = numeric(),
                                        ymin = numeric(), ymax = numeric(),
-                                       label = character(), stringsAsFactors = FALSE))
+                                       lab_area = character(), stringsAsFactors = FALSE))
   
   # Reactive value to store layout data
   layout_data <- reactiveVal(initial_layout_data)  # Initialize with loaded data
@@ -71,7 +76,24 @@ server <- function(input, output, session) {
     else {
       rectangles(data.frame(xmin = numeric(), xmax = numeric(),
                             ymin = numeric(), ymax = numeric(),
-                            label = character(), stringsAsFactors = FALSE))
+                            lab_area = character(), stringsAsFactors = FALSE))
+    }
+  })
+  
+  observe({
+    inputValue <- input$numericInput
+    
+    # Check if the input is not NULL and is numeric (to avoid errors on initial load or invalid input)
+    if (!is.null(inputValue) && is.numeric(inputValue)) {
+      roundedValue <- round(inputValue)
+      
+      # Update the numeric input with the rounded value
+      updateNumericInput(session, "numericInput", value = roundedValue)
+      
+      # (Optional) Display the rounded value
+      output$roundedValue <- renderText({
+        paste("Rounded value:", roundedValue)
+      })
     }
   })
   
@@ -85,32 +107,6 @@ server <- function(input, output, session) {
                height = "600px" # Set height to maintain aspect ratio. Adjust as needed
     )
   })
-  
-  # Create initial plot (based on selected layout)
-  output$interactive_plot <- renderPlot({
-    initial_data <- if (input$layout_choice != "Custom") {
-      layout_data()[[input$layout_choice]]
-    } else {
-      data.frame(xmin = numeric(), xmax = numeric(),
-                 ymin = numeric(), ymax = numeric(),
-                 label = character(), stringsAsFactors = FALSE)
-    }
-    
-    ggplot() +
-      geom_rect(data = rectangles(),  # Use reactive data here
-                aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
-                fill = NA,  # No fill
-                color = "black") +  # Black outline
-      geom_text(data = rectangles(),
-                aes(x = (xmin + xmax) / 2, y = (ymin + ymax) / 2, label = label),
-                size = 5) +
-      xlim(0, xlim_max) +
-      ylim(0, ylim_max) +
-      theme_bw() +
-      labs(title = "Interactive Rectangle Plot")
-    
-  })
-  
   
   
   # Observe brush events and store the brush
@@ -145,17 +141,17 @@ server <- function(input, output, session) {
       
       if (!is.null(brush)) {
         # Get the label based on user input
-        label <- if (input$label_choice == "Custom") {
+        lab_area <- if (input$label_choice == "Custom") {
           input$custom_label
         } else {
           input$label_choice
         }
         
         # Round the brush coordinates
-        xmin_rounded <- floor(brush$xmin / 0.5) * 0.5
-        xmax_rounded <- ceiling(brush$xmax / 0.5) * 0.5
-        ymin_rounded <- floor(brush$ymin / 0.5) * 0.5
-        ymax_rounded <- ceiling(brush$ymax / 0.5) * 0.5
+        xmin_rounded <- round(brush$xmin * 2) / 2
+        xmax_rounded <- round(brush$xmax * 2) / 2
+        ymin_rounded <- round(brush$ymin * 2) / 2
+        ymax_rounded <- round(brush$ymax * 2) / 2
         
         # Adjust for exceeding plot limits
         xmin_rounded <- max(0, xmin_rounded) # Ensure xmin is not less than 0
@@ -187,6 +183,13 @@ server <- function(input, output, session) {
               footer = NULL  # Remove default OK button
             ))
             
+          } else if (abs(xmin_rounded - xmax_rounded) < 2 | abs(ymin_rounded - ymax_rounded) < 2)  {
+            showModal(modalDialog(
+              title = "Area too Small",
+              "Areas must be larger than 2x2. Please draw a new rectangle that is at least this large.",
+              easyClose = TRUE,
+              footer = NULL  # Remove default OK button
+            ))
           } else {
             
             new_rect <- data.frame(
@@ -194,7 +197,7 @@ server <- function(input, output, session) {
               xmax = xmax_rounded,
               ymin = ymin_rounded,
               ymax = ymax_rounded,
-              label = label
+              lab_area = lab_area
             )
             
             rectangles(rbind(rectangles(), new_rect))  # Append to reactive dataframe
@@ -254,16 +257,17 @@ server <- function(input, output, session) {
     } else {
       data.frame(xmin = numeric(), xmax = numeric(),
                  ymin = numeric(), ymax = numeric(),
-                 label = character(), stringsAsFactors = FALSE)
+                 lab_area = character(), stringsAsFactors = FALSE)
     }
     
     ggplot() +
       geom_rect(data = rectangles(),  # Use reactive data here
                 aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
                 fill = NA,  # No fill
-                color = "black") +  # Black outline
+                color = "black",
+                linewidth = 2) +  # Black outline
       geom_text(data = rectangles(),
-                aes(x = (xmin + xmax) / 2, y = (ymin + ymax) / 2, label = label),
+                aes(x = (xmin + xmax) / 2, y = (ymin + ymax) / 2, label = lab_area),
                 size = 5) +
       xlim(0, xlim_max) +
       ylim(0, ylim_max) +

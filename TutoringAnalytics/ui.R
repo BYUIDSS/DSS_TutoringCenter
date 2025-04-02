@@ -10,49 +10,89 @@
 library(shiny)
 library(bslib)
 library(shinyWidgets)
+library(bsicons)
+library(plotly)
 
-cards <- list(
-    card(
-        full_screen = TRUE,
-        card_header("Total Students Attended - Aggregated by day over entire date range"),
-        plotOutput("frequency")
+boxControls <- popover(
+    bs_icon("gear"),
+    virtualSelectInput("boxCourses", "Course(s)",  choices = NULL, multiple = TRUE, zIndex = 900 ),
+    title = "Box Plot Data Selection"
+)
+
+navbarPage( # UI ####
+    title = "BYU-I Tutoring Analytics",
+    selected = "Math Center Analytics",
+    collapsible = TRUE,
+    tabPanel(
+        title = "Math Center Analytics",
+        page_sidebar(
+            sidebar = list(
+                fileInput("file1", "Choose CSV File", accept = ".csv"),
+                virtualSelectInput("courses", "Course(s)",  choices = NULL, multiple = TRUE, zIndex = 900 ),#, showValueAsTags = TRUE),
+                selectInput("dayOfWeek", "Day of Week", choices = c("(select)", "Monday", "Tuesday", "Wednesday","Thursday","Friday", "Saturday", "Sunday")),
+                dateRangeInput("dateRange", "Date Range", start = "2020-01-01")
+            ),
+            layout_columns(
+                fill = FALSE,
+                value_box(
+                    title = "Median appt duration",
+                    value = textOutput("avg_dur"),
+                    showcase = bsicons::bs_icon("align-center")
+                ),
+                value_box(
+                    title = "Standard Deviation",
+                    value = textOutput("sd"),
+                    showcase = bsicons::bs_icon("signpost-split-fill")
+                ),
+                value_box(
+                    title = "Max appt Length",
+                    value = textOutput("max"),
+                    showcase = bsicons::bs_icon("align-top")
+                )
+            ),
+            card(
+                full_screen = TRUE,
+                card_header("Total Students Attended - Aggregated by day over entire date range"),
+                plotOutput("frequency")
+            ),
+            card(
+                full_screen = TRUE,
+                card_header("Attendance Duration Distribution By Course", boxControls,class = "d-flex justify-content-between"),
+                plotOutput("boxplot"),
+            ),
+            card(
+                full_screen = TRUE,
+                card_header("Attendance Duration Distribution By Course", boxControls,class = "d-flex justify-content-between"),
+                plotlyOutput("heatmap"),
+            )
+        )
     ),
-    card(
-        full_screen = TRUE,
-        card_header("Student Visits - on a single given day"),
-        dateInput("waterfall_day", "Choose a Day", value = "2024-02-05"),
-        plotOutput("waterfall"),
+    tabPanel(
+        title = "Study Center Layout Builder",
+        page_sidebar(
+            sidebar = list(
+                selectInput("label_choice", "Label for New Table:",
+                            choices = c("100/101", "108", "Pre-Calc", "Calc 1", "Calc 2/3", "221", "Custom"), selected = "A"),
+                conditionalPanel(
+                    condition = "input.label_choice == 'Custom'",
+                    textInput("custom_label", "Enter Custom Label:")
+                ),
+                selectInput("layout_choice", "Choose Layout:",
+                            choices = c("Layout 1", "Layout 2", "Custom"), selected = "Layout 1"),
+                actionButton("save_layout", "Save Layout"),
+                downloadButton("download_layout", "Download Layout"),
+                textOutput("save_message"),
+                checkboxInput("delete_mode", "Delete Mode", value = FALSE)
+                #numericInput("numericInput", "Observations:", 10, min = 1, max = 100) # Not in use
+            ),
+            layout_columns(
+                card(
+                    full_screen = FALSE,
+                    card_header("Math Study Center Design"),
+                    uiOutput("plot_ui", width = "100%")
+                )
+            )
+        )
     )
 )
 
-fluidPage(
-    bslib::page_sidebar(
-    title = "Tutoring Attendance Dashboard",
-    sidebar = list(
-        virtualSelectInput("courses", "Course(s)",  choices = NULL, multiple = TRUE),#, showValueAsTags = TRUE),
-        fileInput("file1", "Choose CSV File", accept = ".csv"),
-        selectInput("dayOfWeek", "Day of Week", choices = c("(select)", "Monday", "Tuesday", "Wednesday","Thursday","Friday", "Saturday", "Sunday")),
-        dateRangeInput("dateRange", "Date Range", start = "2020-01-01")
-    ),
-    layout_columns(
-        fill = FALSE,
-        value_box(
-            title = "Median appt duration",
-            value = textOutput("avg_dur"),
-            showcase = bsicons::bs_icon("align-center")
-        ),
-        value_box(
-            title = "Standard Deviation",
-            value = textOutput("sd"),
-            showcase = bsicons::bs_icon("signpost-split-fill")
-        ),
-        value_box(
-            title = "Max appt Length",
-            value = textOutput("max"),
-            showcase = bsicons::bs_icon("align-top")
-        )
-    ),
-    cards[[1]],
-    cards[[2]]
-)
-)
